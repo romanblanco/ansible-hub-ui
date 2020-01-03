@@ -15,6 +15,11 @@ class API extends BaseAPI {
     getMyNamespaces(params: object) {
         return this.list(params, 'v3/_ui/my-namespaces/');
     }
+
+    create(params: object) {
+        console.log(params);
+        return this.http.post('v3/_ui/namespaces/', params);
+    }
 }
 
 export const NamespaceAPI = new API();
