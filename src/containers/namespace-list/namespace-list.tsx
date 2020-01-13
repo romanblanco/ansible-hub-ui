@@ -19,6 +19,7 @@ import {
     NamespaceCard,
     Toolbar,
     Pagination,
+    NamespaceModal,
     LoadingPageWithHeader,
 } from '../../components';
 import { Button, ButtonVariant, InputGroup, TextInput } from '@patternfly/react-core';
@@ -51,9 +52,6 @@ interface IProps extends RouteComponentProps {
 
 export class NamespaceList extends React.Component<IProps, IState> {
     nonURLParams = ['tenant'];
-    handleModalToggle;
-    handleSubmit;
-    handleChange;
 
     constructor(props) {
         super(props);
@@ -72,35 +70,6 @@ export class NamespaceList extends React.Component<IProps, IState> {
             itemCount: 0,
             params: params,
             hasPermission: true,
-            isModalOpen: false,
-            newNamespaceName: '',
-            newNamespaceGroupIds: '',
-        };
-
-        this.handleModalToggle = () => {
-          this.setState(({ isModalOpen }) => ({
-            isModalOpen: !isModalOpen
-          }));
-        };
-
-        this.handleChange = (event) => {
-          const target = event.target
-          const formInputName = target.name;
-          this.setState({ [formInputName]: target.value });
-        };
-
-        this.handleSubmit = (event) => {
-          console.log(this.state.newNamespaceName);
-          console.log(this.state.newNamespaceGroupIds);
-          let data: any = {
-            "groups": [
-                "demo",
-                "system:partner-engineers"
-            ],
-            "name": "hakuna matata"
-          }
-          console.log(data);
-          NamespaceAPI.create(data);
         };
     }
 
@@ -204,48 +173,6 @@ export class NamespaceList extends React.Component<IProps, IState> {
                             ))}
                         </Section>
                     )}
-
-                    <React.Fragment>
-                        <Modal
-                          isLarge
-                          title="Create a new namespace"
-                          isOpen={isModalOpen}
-                          onClose={this.handleModalToggle}
-                          actions={[
-                            <Button key="confirm" variant="primary" onClick={this.handleSubmit}>
-                              Confirm
-                            </Button>,
-                            <Button key="cancel" variant="link" onClick={this.handleModalToggle}>
-                              Cancel
-                            </Button>
-                          ]}
-                          isFooterLeftAligned
-                        >
-                            <form noValidate class="pf-c-form pf-m-horizontal">
-                                <div class="pf-c-form__group">
-                                    <label class="pf-c-form__label" for="horizontal-form-name">
-                                        <span class="pf-c-form__label-text">Name</span>
-                                        <span class="pf-c-form__label-required" aria-hidden="true">&#42;</span>
-                                    </label>
-                                    <div class="pf-c-form__horizontal-group">
-                                        <input class="pf-c-form-control" required type="text" id="newNamespaceName" name="newNamespaceName" aria-describedby="horizontal-form-name-helper2" onChange={this.handleChange} />
-                                        <p class="pf-c-form__helper-text" id="horizontal-form-name-helper2" aria-live="polite">Please provide your full name</p>
-                                    </div>
-                                </div>
-                                <div class="pf-c-form__group">
-                                    <label class="pf-c-form__label" for="horizontal-form-title">
-                                        <span class="pf-c-form__label-text">Group</span>
-                                    </label>
-                                    <div class="pf-c-form__horizontal-group">
-                                        <input class="pf-c-form-control" required type="text" id="newNamespaceGroupIds" name="newNamespaceGroupIds" aria-describedby="horizontal-form-name-helper2" onChange={this.handleChange} />
-                                        <p class="pf-c-form__helper-text" id="horizontal-form-name-helper2" aria-live="polite">Please provide group identification numbers</p>
-                                    </div>
-                                </div>
-                            </form>
-                        </Modal>
-                    </React.Fragment>
-                </Main>
-            </React.Fragment>
         );
     }
 

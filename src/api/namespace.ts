@@ -17,6 +17,7 @@ class API extends BaseAPI {
     }
 
     create(params: object) {
+        console.log('in API:');
         console.log(params);
         return this.http.post('v3/_ui/namespaces/', params);
     }
