@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Modal } from '@patternfly/react-core';
 import './namespace-list.scss';
 
 import { RouteComponentProps, Link } from 'react-router-dom';
@@ -20,6 +21,9 @@ import {
     Pagination,
     LoadingPageWithHeader,
 } from '../../components';
+import { Form, FormGroup, ActionGroup } from '@patternfly/react-core';
+import { Button, ButtonVariant, InputGroup, TextInput } from '@patternfly/react-core';
+import { DataToolbar , DataToolbarItem, DataToolbarContent } from '@patternfly/react-core/dist/esm/experimental';
 import { NamespaceAPI, NamespaceListType } from '../../api';
 import { Paths, formatPath } from '../../paths';
 import { Constants } from '../../constants';
@@ -35,6 +39,9 @@ interface IState {
         tenant?: string;
     };
     hasPermission: boolean;
+    isModalOpen: boolean;
+    newNamespaceName: string;
+    newNamespaceGroupIds: string;
 }
 
 interface IProps extends RouteComponentProps {
@@ -45,6 +52,8 @@ interface IProps extends RouteComponentProps {
 
 export class NamespaceList extends React.Component<IProps, IState> {
     nonURLParams = ['tenant'];
+    handleModalToggle;
+    handleSubmit;
 
     constructor(props) {
         super(props);
@@ -63,6 +72,46 @@ export class NamespaceList extends React.Component<IProps, IState> {
             itemCount: 0,
             params: params,
             hasPermission: true,
+            isModalOpen: false,
+            newNamespaceName: '',
+            newNamespaceGroupIds: '',
+        };
+
+        this.handleModalToggle = () => {
+          this.setState(({ isModalOpen }) => ({
+            isModalOpen: !isModalOpen
+          }));
+        };
+
+        this.handleSubmit = (event) => {
+          let data: any = {
+            "name": this.state.newNamespaceName,
+            "groups": [
+                "system:partner-engineers"
+            ],
+          };
+          NamespaceAPI.createNamespace(data).then(results => {
+            console.log(results);
+            if (results.status == 201) {
+              // TODO:
+              //   alerts: this.state.alerts.concat({
+              //       variant: 'success',
+              //       title: `Namespace created successfully .`,
+              //   })
+              this.loadNamespaces();
+            } else {
+              // TODO:
+              //   alerts: this.state.alerts.concat({
+              //       variant: 'danger',
+              //       title: `API Error: ${error.response.status}`,
+              //       description:
+              //           `Could not create the namespace.`,
+              //   })
+            }
+          });
+          this.handleModalToggle();
+          this.setState({ newNamespaceName: '' });
+          this.setState({ newNamespaceGroupIds: '' });
         };
     }
 
@@ -85,6 +134,8 @@ export class NamespaceList extends React.Component<IProps, IState> {
     render() {
         const { namespaces, params, itemCount, hasPermission } = this.state;
         const { title, namespacePath } = this.props;
+        const { isModalOpen } = this.state;
+
         if (!namespaces) {
             return <LoadingPageWithHeader></LoadingPageWithHeader>;
         }
@@ -103,7 +154,12 @@ export class NamespaceList extends React.Component<IProps, IState> {
                                 )
                             }
                         />
-
+                        <DataToolbarItem variant="separator" />
+                        <DataToolbarItem>
+                            <Button variant="primary"
+                                    onClick={this.handleModalToggle}
+                            >Create</Button>
+                        </DataToolbarItem>
                         <div>
                             <Pagination
                                 params={params}
@@ -159,6 +215,64 @@ export class NamespaceList extends React.Component<IProps, IState> {
                             ))}
                         </Section>
                     )}
+
+                    <React.Fragment>
+                        <Modal
+                          isLarge
+                          title="Create a new namespace"
+                          isOpen={isModalOpen}
+                          onClose={this.handleModalToggle}
+                          actions={[
+                            <Button key="confirm" variant="primary" onClick={this.handleSubmit}>
+                              Confirm
+                            </Button>,
+                            <Button key="cancel" variant="link" onClick={this.handleModalToggle}>
+                              Cancel
+                            </Button>
+                          ]}
+                          isFooterLeftAligned
+                        >
+                            <Form>
+                                <FormGroup
+                                  label="Name"
+                                  isRequired
+                                  fieldId="simple-form-name"
+                                  helperText="Please provide the namespace name"
+                                >
+                                    <TextInput
+                                      isRequired
+                                      type="text"
+                                      id="newNamespaceName"
+                                      name="newNamespaceName"
+                                      aria-describedby="simple-form-name-helper"
+                                      value={this.state.newNamespaceName}
+                                      onChange={value =>
+                                          this.setState({
+                                              newNamespaceName: value,
+                                          })
+                                      }
+                                    />
+                                </FormGroup>
+                                <FormGroup label="Group"
+                                           helperText="Please provide the groups ids"
+                                           isRequired fieldId="simple-form-group"
+                                >
+                                    <TextInput
+                                      isRequired
+                                      type="text"
+                                      id="newNamespaceGroupIds"
+                                      name="newNamespaceGroupIds"
+                                      value={this.state.newNamespaceGroupIds}
+                                      onChange={value =>
+                                          this.setState({
+                                              newNamespaceGroupIds: value,
+                                          })
+                                      }
+                                    />
+                                </FormGroup>
+                            </Form>
+                        </Modal>
+                    </React.Fragment>
                 </Main>
             </React.Fragment>
         );
